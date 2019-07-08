@@ -2,6 +2,12 @@ package com.fathua.o2o.entity;
 
 import java.util.Date;
 
+/**
+ * 商店
+ *
+ * @author JIDI
+ * @date
+ */
 public class Shop {
     private Long shopId;
     private Long ownerId;

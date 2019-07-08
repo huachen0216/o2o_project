@@ -7,19 +7,17 @@ import com.fathua.o2o.entity.PersonInfo;
 import com.fathua.o2o.entity.Shop;
 import com.fathua.o2o.entity.ShopCategory;
 import com.fathua.o2o.enums.ShopStateEnum;
+import com.fathua.o2o.exceptions.ShopOperationException;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileItemFactory;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.commons.CommonsMultipartFile;
 
 import java.io.*;
 import java.util.Date;
-
-import org.apache.http.entity.ContentType;
-import org.springframework.web.multipart.commons.CommonsMultipartFile;
 
 import static org.junit.Assert.assertEquals;
 
@@ -30,6 +28,18 @@ import static org.junit.Assert.assertEquals;
 public class ShopServiceTest extends BaseTest {
     @Autowired
     private ShopService shopService;
+
+    @Test
+    public void testModifyShop() throws ShopOperationException, FileNotFoundException{
+        Shop shop = new Shop();
+        shop.setShopId(1L);
+        shop.setShopName("修改后的店铺名称");
+        File shopImg = new File("E:\\temp\\image\\a-03.jpg");
+        InputStream is = new FileInputStream(shopImg);
+        ShopExecution shopExecution = shopService.modifyShop(shop, is, "a-03.jpg");
+        System.out.println("新图片的名称为: " + shopExecution.getShop().getShopName());
+        System.out.println("新图片的地址为: " + shopExecution.getShop().getShopImg());
+    }
 
     @Test
     public void testAddShop() throws FileNotFoundException {
