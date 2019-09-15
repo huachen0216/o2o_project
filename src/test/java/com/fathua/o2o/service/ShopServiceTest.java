@@ -30,7 +30,19 @@ public class ShopServiceTest extends BaseTest {
     private ShopService shopService;
 
     @Test
-    public void testModifyShop() throws ShopOperationException, FileNotFoundException{
+    public void testGetShopList() {
+        Shop shopCondition = new Shop();
+        ShopCategory sc = new ShopCategory();
+        sc.setShopCategoryId(1L);
+        shopCondition.setShopCategory(sc);
+        ShopExecution se = shopService.getShopList(shopCondition, 2, 2);
+        System.out.println("店铺长度: " + se.getShopList().size());
+        System.out.println("店铺总数: " + se.getCount());
+    }
+
+
+    @Test
+    public void testModifyShop() throws ShopOperationException, FileNotFoundException {
         Shop shop = new Shop();
         shop.setShopId(1L);
         shop.setShopName("修改后的店铺名称");
@@ -84,20 +96,16 @@ public class ShopServiceTest extends BaseTest {
         File newfile = new File(filePath);
         int bytesRead = 0;
         byte[] buffer = new byte[8192];
-        try
-        {
+        try {
             FileInputStream fis = new FileInputStream(newfile);
             OutputStream os = item.getOutputStream();
             while ((bytesRead = fis.read(buffer, 0, 8192))
-                    != -1)
-            {
+                    != -1) {
                 os.write(buffer, 0, bytesRead);
             }
             os.close();
             fis.close();
-        }
-        catch (IOException e)
-        {
+        } catch (IOException e) {
             e.printStackTrace();
         }
         return item;

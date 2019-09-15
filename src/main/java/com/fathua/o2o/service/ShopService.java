@@ -6,8 +6,21 @@ import com.fathua.o2o.exceptions.ShopOperationException;
 
 import java.io.InputStream;
 
+/**
+ * @author jidi
+ * @date 2019/6/24 22:39
+ */
 public interface ShopService {
 
+    /**
+     * 根据shopCondition分页获取商铺列表
+     *
+     * @param shopCondition
+     * @param pageIndex
+     * @param pageSize
+     * @return
+     */
+    public ShopExecution getShopList(Shop shopCondition, int pageIndex, int pageSize);
     /**
      * 更新店铺信息
      *

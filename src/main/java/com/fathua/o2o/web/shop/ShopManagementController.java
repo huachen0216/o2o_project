@@ -1,4 +1,4 @@
-package com.fathua.o2o.web.shopadmin;
+package com.fathua.o2o.web.shop;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fathua.o2o.dto.ShopExecution;
@@ -13,19 +13,18 @@ import com.fathua.o2o.service.ShopCategoryService;
 import com.fathua.o2o.service.ShopService;
 import com.fathua.o2o.utils.CodeUtil;
 import com.fathua.o2o.utils.HttpServletRequestUtil;
-import com.fathua.o2o.utils.ImageUtil;
-import com.fathua.o2o.utils.PathUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.multipart.commons.CommonsMultipartFile;
 import org.springframework.web.multipart.commons.CommonsMultipartResolver;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.*;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -36,7 +35,7 @@ import java.util.Map;
  * @date 2019/6/15 23:59
  */
 @Controller
-@RequestMapping("/shopadmin")
+@RequestMapping("/shop")
 public class ShopManagementController {
     @Autowired
     private ShopService shopService;
@@ -46,6 +45,65 @@ public class ShopManagementController {
 
     @Autowired
     private AreaService areaService;
+
+    /**
+     * 根据shopId进行重定向判断
+     *
+     * @param request
+     * @return
+     */
+    @RequestMapping(value = "/getshopmanagementinfo", method = RequestMethod.GET)
+    @ResponseBody
+    private Map<String, Object> getShopManagementInfo(HttpServletRequest request) {
+        Map<String, Object> modelMap = new HashMap<String, Object>();
+        long shopId = HttpServletRequestUtil.getLong(request, "shopId");
+        if (shopId <= 0) {
+            Object currentShopObj = request.getSession().getAttribute("currentShop");
+            if (currentShopObj == null) {
+                modelMap.put("redirect", true);
+                modelMap.put("url", "o2o/shop/shoplist");
+            } else {
+                Shop currentShop = (Shop) currentShopObj;
+                modelMap.put("redirect", false);
+                modelMap.put("shopId", currentShop.getShopId());
+            }
+        } else {
+            Shop currentShop = new Shop();
+            currentShop.setShopId(shopId);
+            request.getSession().setAttribute("currentShop", currentShop);
+            modelMap.put("redirect", false);
+        }
+        return modelMap;
+    }
+
+    /**
+     * 获取店铺列表信息
+     *
+     * @param request
+     * @return
+     */
+    @RequestMapping(value = "/getshoplist", method = RequestMethod.GET)
+    @ResponseBody
+    private Map<String, Object> getShopList(HttpServletRequest request) {
+        Map<String, Object> modelMap = new HashMap<String, Object>();
+        PersonInfo user = new PersonInfo();
+        user.setUserId(1L);
+        user.setName("jidi");
+        request.getSession().setAttribute("user", user);
+        user = (PersonInfo) request.getSession().getAttribute("user");
+        try {
+            Shop shopCondition = new Shop();
+            shopCondition.setOwner(user);
+            ShopExecution se = shopService.getShopList(shopCondition, 0, 100);
+            modelMap.put("shopList", se.getShopList());
+            modelMap.put("user", user);
+            modelMap.put("success", true);
+        } catch (Exception e) {
+            modelMap.put("success", false);
+            modelMap.put("errMsg", e.getMessage());
+        }
+        return modelMap;
+    }
 
     /**
      * 店铺注册
@@ -76,7 +134,7 @@ public class ShopManagementController {
         }
         CommonsMultipartFile shopImg = null;
         CommonsMultipartResolver commonsMultipartResolver = new CommonsMultipartResolver(
-                request.getSession().getServletContext());
+        );
         if (commonsMultipartResolver.isMultipart(request)) {
             MultipartHttpServletRequest multipartHttpServletRequest = (MultipartHttpServletRequest) request;
             shopImg = (CommonsMultipartFile) multipartHttpServletRequest.getFile("shopImg");
@@ -89,7 +147,7 @@ public class ShopManagementController {
         if (shop != null && shopImg != null) {
             PersonInfo owner = (PersonInfo) request.getSession().getAttribute("user");
             shop.setOwner(owner);
-//            shop.setPriority(2);
+            // shop.setPriority(2);
             ShopExecution se = null;
             try {
                 se = shopService.addShop(shop, shopImg.getInputStream(), shopImg.getOriginalFilename());
@@ -120,7 +178,6 @@ public class ShopManagementController {
             modelMap.put("errMsg", "请输入店铺信息");
             return modelMap;
         }
-        // 3. 返回结果
     }
 
     /**
